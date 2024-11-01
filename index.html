@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Tabela de Laudos de Mortes</title>
+    <!-- Incluir a biblioteca PapaParse via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #e6f4ea; /* Tom verde claro */
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2e7d32; /* Verde escuro */
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .controls div {
+            display: flex;
+            flex-direction: column;
+        }
+        .controls label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2e7d32; /* Verde escuro */
+        }
+        .controls select, .controls input {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #2e7d32;
+            border-radius: 4px;
+        }
+        .controls select:hover, .controls input:hover {
+            border-color: #1b5e20; /* Verde mais escuro no hover */
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            background-color: #2e7d32; /* Verde escuro */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            margin-bottom: 10px;
+        }
+        .buttons button:hover {
+            background-color: #1b5e20; /* Verde mais escuro no hover */
+        }
+       
+        #tabela {
+            width: 100%;
+            border-collapse: separate; /* Alterado de collapse para separate */
+            border-spacing: 0;         /* Adicionado para remover espaçamento entre células */
+            background-color: white;
+            border: 1px solid #ddd;    /* Adicionado para definir a borda da tabela */
+            border-radius: 10px;       /* Define o arredondamento das bordas */
+            overflow: hidden;          /* Garante que o arredondamento seja aplicado corretamente */
+        }
+        #tabela th, #tabela td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        #tabela th {
+            background-color: #2e7d32; /* Verde escuro */
+            color: white;
+            cursor: pointer; /* Indica que os cabeçalhos são clicáveis para ordenação */
+            transition: background-color 0.3s ease;
+        }
+        #tabela th:hover {
+            background-color: #1b5e20; /* Verde mais escuro no hover */
+        }
+        #tabela tr:nth-child(even) {
+            background-color: #f1f8e9; /* Verde muito claro */
+        }
+        #tabela tr:hover {
+            background-color: #c8e6c9; /* Verde claro no hover */
+        }
+
+        /* Arredonda os cantos das células do cabeçalho */
+        #tabela th:first-child {
+            border-top-left-radius: 10px;
+        }
+        #tabela th:last-child {
+            border-top-right-radius: 10px;
+        }
+
+        /* Arredonda os cantos das células das linhas */
+        #tabela tr:last-child td:first-child {
+            border-bottom-left-radius: 10px;
+        }
+        #tabela tr:last-child td:last-child {
+            border-bottom-right-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            .controls div {
+                width: 100%;
+                max-width: 300px;
+            }
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .buttons button {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tabela de Laudos de Mortes</h1>
+    <h2 id="titulo-ano">Selecione um ano para visualizar os dados.</h2>
+
+    <!-- Controles de Filtro -->
+    <div class="controls">
+        <div>
+            <label for="seletorAno">Selecionar Ano</label>
+            <select id="seletorAno">
+                <option value="">Selecione um ano</option>
+                <option value="2017">2017</option>
+                <option value="2018">2018</option>
+                <option value="2019">2019</option>
+                <option value="2020">2020</option>
+                <option value="2021">2021</option>
+                <option value="2022">2022</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtroTipoLaudo">Tipo de Laudo</label>
+            <select id="filtroTipoLaudo">
+                <option value="">Todos</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtroClassificacao">Classificação Final</label>
+            <select id="filtroClassificacao">
+                <option value="">Todos</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtroCor">Cor</label>
+            <select id="filtroCor">
+                <option value="">Todos</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Botões para Exportar -->
+    <div class="buttons">
+        <!-- Botão para exportar para PDF -->
+        <button id="exportarPDF">Exportar para PDF</button>
+        <!-- Botão para exportar para CSV -->
+        <button id="exportarCSV">Exportar para CSV</button>
+    </div>
+
+    <!-- Tabela para Exibir os Dados -->
+    <table id="tabela">
+        <thead>
+            <tr id="tabela-head">
+                <!-- Cabeçalhos serão gerados dinamicamente -->
+            </tr>
+        </thead>
+        <tbody id="tabela-body">
+            <!-- Dados serão gerados dinamicamente -->
+        </tbody>
+    </table>
+
+    <!-- Inclusão das Bibliotecas para Exportação em PDF -->
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- jsPDF-AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Seu Script Principal -->
+    <script>
+        // Elementos do DOM
+        const tabelaHead = document.getElementById('tabela-head');
+        const tabelaBody = document.getElementById('tabela-body');
+        const seletorAno = document.getElementById('seletorAno');
+        const filtroTipoLaudo = document.getElementById('filtroTipoLaudo');
+        const filtroClassificacao = document.getElementById('filtroClassificacao');
+        const filtroCor = document.getElementById('filtroCor');
+        const tituloAno = document.getElementById('titulo-ano');
+        const exportarPDF = document.getElementById('exportarPDF');
+        const exportarCSV = document.getElementById('exportarCSV');
+
+        let dadosCSV = []; // Armazenará os dados do CSV
+        let headers = [];   // Armazenará os cabeçalhos do CSV
+
+        // Função para gerar opções únicas para os filtros
+        function gerarOpcoesFiltro(coluna, elementoFiltro) {
+            const valoresUnicos = [...new Set(dadosCSV.map(item => item[coluna]))].filter(val => val);
+            valoresUnicos.sort();
+            valoresUnicos.forEach(valor => {
+                const option = document.createElement('option');
+                option.value = valor;
+                option.textContent = valor;
+                elementoFiltro.appendChild(option);
+            });
+        }
+
+        // Função para criar a tabela
+        function criarTabela() {
+            // Limpar cabeçalho e corpo da tabela
+            tabelaHead.innerHTML = '';
+            tabelaBody.innerHTML = '';
+
+            // Criar cabeçalhos
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                tabelaHead.appendChild(th);
+            });
+
+            // Adicionar funcionalidade de ordenação
+            adicionarOrdenacaoNosCabecalhos();
+
+            // Preencher o corpo da tabela
+            dadosCSV.forEach(row => {
+                const tr = document.createElement('tr');
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    td.textContent = row[header] || '';
+                    tr.appendChild(td);
+                });
+                tabelaBody.appendChild(tr);
+            });
+        }
+
+        // Função para aplicar os filtros
+        function aplicarFiltros() {
+            const tipoLaudo = filtroTipoLaudo.value.toLowerCase();
+            const classificacao = filtroClassificacao.value.toLowerCase();
+            const cor = filtroCor.value.toLowerCase();
+            const ano = seletorAno.value;
+
+            // Filtrar os dados
+            const dadosFiltrados = dadosCSV.filter(row => {
+                const matchTipoLaudo = tipoLaudo ? (row['Tipo de Laudo'] && row['Tipo de Laudo'].toLowerCase() === tipoLaudo) : true;
+                const matchClassificacao = classificacao ? (row['Classificacao_Final'] && row['Classificacao_Final'].toLowerCase() === classificacao) : true;
+                const matchCor = cor ? (row['Cor'] && row['Cor'].toLowerCase() === cor) : true;
+                const matchAno = ano ? (row['Ano'] && row['Ano'] === ano) : true;
+                return matchTipoLaudo && matchClassificacao && matchCor && matchAno;
+            });
+
+            // Atualizar o corpo da tabela
+            tabelaBody.innerHTML = '';
+            dadosFiltrados.forEach(row => {
+                const tr = document.createElement('tr');
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    td.textContent = row[header] || '';
+                    tr.appendChild(td);
+                });
+                tabelaBody.appendChild(tr);
+            });
+        }
+
+        // Função para inicializar os filtros após o carregamento do CSV
+        function inicializarFiltros() {
+            // Limpar opções existentes
+            filtroTipoLaudo.innerHTML = '<option value="">Todos</option>';
+            filtroClassificacao.innerHTML = '<option value="">Todos</option>';
+            filtroCor.innerHTML = '<option value="">Todos</option>';
+
+            // Gerar opções únicas para cada filtro, exceto o filtro de ano
+            gerarOpcoesFiltro('Tipo de Laudo', filtroTipoLaudo);
+            gerarOpcoesFiltro('Classificacao_Final', filtroClassificacao);
+            gerarOpcoesFiltro('Cor', filtroCor);
+            // O filtro de Ano é utilizado para selecionar o CSV, então não precisa ser populado aqui
+        }
+
+        // Função para adicionar ordenação aos cabeçalhos
+        let ordenacaoAscendente = true;
+        let colunaOrdenada = '';
+
+        function ordenarTabela(coluna) {
+            if (colunaOrdenada === coluna) {
+                ordenacaoAscendente = !ordenacaoAscendente;
+            } else {
+                ordenacaoAscendente = true;
+            }
+            colunaOrdenada = coluna;
+
+            dadosCSV.sort((a, b) => {
+                const aValor = a[coluna] ? a[coluna].toString().toLowerCase() : '';
+                const bValor = b[coluna] ? b[coluna].toString().toLowerCase() : '';
+                if (aValor < bValor) return ordenacaoAscendente ? -1 : 1;
+                if (aValor > bValor) return ordenacaoAscendente ? 1 : -1;
+                return 0;
+            });
+
+            // Atualizar a tabela
+            criarTabela();
+            inicializarFiltros();
+            aplicarFiltros(); // Reaplicar os filtros após ordenar
+        }
+
+        function adicionarOrdenacaoNosCabecalhos() {
+            const ths = tabelaHead.querySelectorAll('th');
+            ths.forEach(th => {
+                th.style.cursor = 'pointer';
+                th.addEventListener('click', () => {
+                    const coluna = th.textContent;
+                    ordenarTabela(coluna);
+                });
+            });
+        }
+
+        // Função para carregar e processar o CSV automaticamente
+        function carregarCSV(nomeArquivoCSV, anoSelecionado = '') {
+            Papa.parse(nomeArquivoCSV, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    dadosCSV = results.data;
+                    headers = results.meta.fields;
+
+                    // Criar a tabela
+                    criarTabela();
+
+                    // Inicializar os filtros
+                    inicializarFiltros();
+
+                    // Atualizar o título com o ano selecionado, se houver
+                    if (anoSelecionado) {
+                        tituloAno.textContent = `Ano: ${anoSelecionado}`;
+                        // Definir o filtro do ano selecionado
+                        seletorAno.value = anoSelecionado;
+                    } else {
+                        tituloAno.textContent = 'Selecione um ano para visualizar os dados.';
+                        seletorAno.value = '';
+                    }
+
+                    // Aplicar filtros
+                    aplicarFiltros();
+                },
+                error: function(error) {
+                    console.error("Erro ao ler o arquivo CSV:", error);
+                    tituloAno.textContent = "Erro ao carregar os dados.";
+                    tabelaHead.innerHTML = '';
+                    tabelaBody.innerHTML = '';
+                }
+            });
+        }
+
+        // Event Listener para o seletor de ano
+        seletorAno.addEventListener('change', () => {
+            const anoSelecionado = seletorAno.value;
+            if (anoSelecionado) {
+                // Tentar carregar o arquivo CSV correspondente
+                const nomeArquivo = `${anoSelecionado}LLM_zero_shot_com_fallback.csv`;
+
+                // Verificar se o ano selecionado tem um arquivo disponível
+                // Ajuste esta lógica conforme a disponibilidade real dos arquivos
+                const anosDisponiveis = ['2017', '2018', '2019', '2020', '2021', '2022']; // Anos com arquivos disponíveis
+
+                if (anosDisponiveis.includes(anoSelecionado)) {
+                    carregarCSV(nomeArquivo, anoSelecionado);
+                } else {
+                    // Para anos de 2019 a 2022, que ainda não possuem arquivos, exibir mensagem
+                    tituloAno.textContent = `Dados para o ano ${anoSelecionado} não estão disponíveis no momento.`;
+                    tabelaHead.innerHTML = '';
+                    tabelaBody.innerHTML = '';
+                    // Limpar os filtros
+                    filtroTipoLaudo.innerHTML = '<option value="">Todos</option>';
+                    filtroClassificacao.innerHTML = '<option value="">Todos</option>';
+                    filtroCor.innerHTML = '<option value="">Todos</option>';
+                }
+            } else {
+                // Se "Selecione um ano" for escolhido, limpar a tabela e resetar o título
+                tituloAno.textContent = 'Selecione um ano para visualizar os dados.';
+                tabelaHead.innerHTML = '';
+                tabelaBody.innerHTML = '';
+                // Limpar os filtros
+                filtroTipoLaudo.innerHTML = '<option value="">Todos</option>';
+                filtroClassificacao.innerHTML = '<option value="">Todos</option>';
+                filtroCor.innerHTML = '<option value="">Todos</option>';
+            }
+        });
+
+        // Event Listeners para os filtros (excluindo o filtro de ano)
+        [filtroTipoLaudo, filtroClassificacao, filtroCor].forEach(filtro => {
+            filtro.addEventListener('change', aplicarFiltros);
+        });
+
+        // Função para exportar a tabela para PDF utilizando jsPDF-AutoTable
+        exportarPDF.addEventListener('click', () => {
+            // Verificar se jsPDF está carregado
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                console.error("jsPDF não está carregado corretamente.");
+                alert("Erro: jsPDF não está carregado corretamente.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+
+            // Preparar os dados para o AutoTable
+            const colunas = headers;
+            const dadosFiltrados = dadosCSV.filter(row => {
+                const tipoLaudo = filtroTipoLaudo.value.toLowerCase();
+                const classificacao = filtroClassificacao.value.toLowerCase();
+                const cor = filtroCor.value.toLowerCase();
+                const ano = seletorAno.value;
+
+                const matchTipoLaudo = tipoLaudo ? (row['Tipo de Laudo'] && row['Tipo de Laudo'].toLowerCase() === tipoLaudo) : true;
+                const matchClassificacao = classificacao ? (row['Classificacao_Final'] && row['Classificacao_Final'].toLowerCase() === classificacao) : true;
+                const matchCor = cor ? (row['Cor'] && row['Cor'].toLowerCase() === cor) : true;
+                const matchAno = ano ? (row['Ano'] && row['Ano'] === ano) : true;
+
+                return matchTipoLaudo && matchClassificacao && matchCor && matchAno;
+            });
+
+            const linhasFiltradas = dadosFiltrados.map(row => colunas.map(col => row[col] || ''));
+
+            // Adicionar AutoTable ao PDF com configurações ajustadas
+            doc.autoTable({
+                head: [colunas],
+                body: linhasFiltradas,
+                theme: 'striped', // Opções: 'striped', 'grid', 'plain', 'dots', 'hierarchy'
+                headStyles: { fillColor: [46, 125, 50], textColor: [255, 255, 255] }, // Verde escuro e texto branco
+                styles: {
+                    fontSize: 8,          // Tamanho da fonte menor
+                    cellPadding: 1,       // Padding das células menor
+                    overflow: 'linebreak',
+                    cellWidth: 26,
+                },
+                columnStyles: {
+                    // Defina conforme necessário; ajuste os nomes das colunas conforme seu CSV
+                    // Exemplo:
+                    // 'Nome da Vítima': { cellWidth: 30 },
+                    // 'Email': { cellWidth: 40 },
+                    // 'País': { cellWidth: 20 },
+                    // Adicione todas as colunas necessárias
+                },
+                margin: { top: 10, bottom: 10, left: 5, right: 5 },
+                autoPageBreak: true,
+                pageBreak: 'auto',
+            });
+
+            // Adicionar título
+            doc.text(`Laudos de Mortes - ${seletorAno.value || 'Todos os Anos'}`, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+
+            // Salvar o PDF
+            doc.save(`Laudos_de_Mortes_${seletorAno.value || 'Todos_Anos'}.pdf`);
+        });
+
+        // Função para exportar os dados filtrados como CSV
+        exportarCSV.addEventListener('click', () => {
+            // Filtrar os dados conforme os filtros aplicados
+            const tipoLaudo = filtroTipoLaudo.value.toLowerCase();
+            const classificacao = filtroClassificacao.value.toLowerCase();
+            const cor = filtroCor.value.toLowerCase();
+            const ano = seletorAno.value;
+
+            const dadosFiltrados = dadosCSV.filter(row => {
+                const matchTipoLaudo = tipoLaudo ? (row['Tipo de Laudo'] && row['Tipo de Laudo'].toLowerCase() === tipoLaudo) : true;
+                const matchClassificacao = classificacao ? (row['Classificacao_Final'] && row['Classificacao_Final'].toLowerCase() === classificacao) : true;
+                const matchCor = cor ? (row['Cor'] && row['Cor'].toLowerCase() === cor) : true;
+                const matchAno = ano ? (row['Ano'] && row['Ano'] === ano) : true;
+                return matchTipoLaudo && matchClassificacao && matchCor && matchAno;
+            });
+
+            if (dadosFiltrados.length === 0) {
+                alert("Nenhum dado para exportar.");
+                return;
+            }
+
+            // Converter os dados filtrados para CSV usando PapaParse
+            const csv = Papa.unparse(dadosFiltrados);
+
+            // Criar um blob com os dados CSV
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+            // Criar um link temporário para download
+            const link = document.createElement("a");
+            if (link.download !== undefined) { // Navegadores que suportam o atributo download
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `Laudos_de_Mortes_${ano || 'Todos_Anos'}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+
+        // Opcional: Carregar automaticamente um ano específico ao carregar a página
+        // Por exemplo, para carregar 2017 por padrão:
+        // window.addEventListener('DOMContentLoaded', () => {
+        //     carregarCSV("2017LLM_zero_shot_com_fallback.csv", "2017");
+        // });
+    </script>
+
+</body>
+</html>
