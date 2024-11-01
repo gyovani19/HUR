@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Tabela de Laudos de Mortes</title>
-    <!-- Incluir a biblioteca PapaParse via CDN -->
+  
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #e6f4ea; /* Tom verde claro */
+            background-color: #e6f4ea;
         }
         h1, h2 {
             text-align: center;
-            color: #2e7d32; /* Verde escuro */
+            color: #2e7d32; 
         }
         .controls {
             margin-bottom: 20px;
@@ -29,7 +29,7 @@
         .controls label {
             margin-bottom: 5px;
             font-weight: bold;
-            color: #2e7d32; /* Verde escuro */
+            color: #2e7d32; 
         }
         .controls select, .controls input {
             padding: 8px;
@@ -38,7 +38,7 @@
             border-radius: 4px;
         }
         .controls select:hover, .controls input:hover {
-            border-color: #1b5e20; /* Verde mais escuro no hover */
+            border-color: #1b5e20; 
         }
         .buttons {
             display: flex;
@@ -49,7 +49,7 @@
         }
         .buttons button {
             padding: 10px 20px;
-            background-color: #2e7d32; /* Verde escuro */
+            background-color: #2e7d32;
             color: white;
             border: none;
             border-radius: 4px;
@@ -59,17 +59,17 @@
             margin-bottom: 10px;
         }
         .buttons button:hover {
-            background-color: #1b5e20; /* Verde mais escuro no hover */
+            background-color: #1b5e20; 
         }
        
         #tabela {
             width: 100%;
-            border-collapse: separate; /* Alterado de collapse para separate */
-            border-spacing: 0;         /* Adicionado para remover espaçamento entre células */
+            border-collapse: separate;
+            border-spacing: 0;     
             background-color: white;
-            border: 1px solid #ddd;    /* Adicionado para definir a borda da tabela */
-            border-radius: 10px;       /* Define o arredondamento das bordas */
-            overflow: hidden;          /* Garante que o arredondamento seja aplicado corretamente */
+            border: 1px solid #ddd;    
+            border-radius: 10px;      
+            overflow: hidden;        
         }
         #tabela th, #tabela td {
             border: 1px solid #ddd;
@@ -77,22 +77,22 @@
             text-align: left;
         }
         #tabela th {
-            background-color: #2e7d32; /* Verde escuro */
+            background-color: #2e7d32; 
             color: white;
-            cursor: pointer; /* Indica que os cabeçalhos são clicáveis para ordenação */
+            cursor: pointer; 
             transition: background-color 0.3s ease;
         }
         #tabela th:hover {
-            background-color: #1b5e20; /* Verde mais escuro no hover */
+            background-color: #1b5e20; 
         }
         #tabela tr:nth-child(even) {
-            background-color: #f1f8e9; /* Verde muito claro */
+            background-color: #f1f8e9; 
         }
         #tabela tr:hover {
-            background-color: #c8e6c9; /* Verde claro no hover */
+            background-color: #c8e6c9; 
         }
 
-        /* Arredonda os cantos das células do cabeçalho */
+        
         #tabela th:first-child {
             border-top-left-radius: 10px;
         }
@@ -100,7 +100,7 @@
             border-top-right-radius: 10px;
         }
 
-        /* Arredonda os cantos das células das linhas */
+       
         #tabela tr:last-child td:first-child {
             border-bottom-left-radius: 10px;
         }
@@ -187,15 +187,15 @@
         </tbody>
     </table>
 
-    <!-- Inclusão das Bibliotecas para Exportação em PDF -->
+  
     <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- jsPDF-AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <!-- Seu Script Principal -->
+    <!-- Script Principal -->
     <script>
-        // Elementos do DOM
+       
         const tabelaHead = document.getElementById('tabela-head');
         const tabelaBody = document.getElementById('tabela-body');
         const seletorAno = document.getElementById('seletorAno');
@@ -223,7 +223,7 @@
 
         // Função para criar a tabela
         function criarTabela() {
-            // Limpar cabeçalho e corpo da tabela
+           
             tabelaHead.innerHTML = '';
             tabelaBody.innerHTML = '';
 
@@ -289,7 +289,7 @@
             gerarOpcoesFiltro('Tipo de Laudo', filtroTipoLaudo);
             gerarOpcoesFiltro('Classificacao_Final', filtroClassificacao);
             gerarOpcoesFiltro('Cor', filtroCor);
-            // O filtro de Ano é utilizado para selecionar o CSV, então não precisa ser populado aqui
+            
         }
 
         // Função para adicionar ordenação aos cabeçalhos
@@ -375,17 +375,16 @@
                 const nomeArquivo = `${anoSelecionado}LLM_zero_shot_com_fallback.csv`;
 
                 // Verificar se o ano selecionado tem um arquivo disponível
-                // Ajuste esta lógica conforme a disponibilidade real dos arquivos
                 const anosDisponiveis = ['2017', '2018', '2019', '2020', '2021', '2022']; // Anos com arquivos disponíveis
 
                 if (anosDisponiveis.includes(anoSelecionado)) {
                     carregarCSV(nomeArquivo, anoSelecionado);
                 } else {
-                    // Para anos de 2019 a 2022, que ainda não possuem arquivos, exibir mensagem
+            
                     tituloAno.textContent = `Dados para o ano ${anoSelecionado} não estão disponíveis no momento.`;
                     tabelaHead.innerHTML = '';
                     tabelaBody.innerHTML = '';
-                    // Limpar os filtros
+              
                     filtroTipoLaudo.innerHTML = '<option value="">Todos</option>';
                     filtroClassificacao.innerHTML = '<option value="">Todos</option>';
                     filtroCor.innerHTML = '<option value="">Todos</option>';
@@ -441,32 +440,26 @@
             doc.autoTable({
                 head: [colunas],
                 body: linhasFiltradas,
-                theme: 'striped', // Opções: 'striped', 'grid', 'plain', 'dots', 'hierarchy'
+                theme: 'striped', 
                 headStyles: { fillColor: [46, 125, 50], textColor: [255, 255, 255] }, // Verde escuro e texto branco
                 styles: {
-                    fontSize: 8,          // Tamanho da fonte menor
-                    cellPadding: 1,       // Padding das células menor
+                    fontSize: 8,        
+                    cellPadding: 1,     
                     overflow: 'linebreak',
                     cellWidth: 26,
                 },
                 columnStyles: {
-                    // Defina conforme necessário; ajuste os nomes das colunas conforme seu CSV
-                    // Exemplo:
-                    // 'Nome da Vítima': { cellWidth: 30 },
-                    // 'Email': { cellWidth: 40 },
-                    // 'País': { cellWidth: 20 },
-                    // Adicione todas as colunas necessárias
                 },
                 margin: { top: 10, bottom: 10, left: 5, right: 5 },
                 autoPageBreak: true,
                 pageBreak: 'auto',
             });
 
-            // Adicionar título
+     
             doc.text(`Laudos de Mortes - ${seletorAno.value || 'Todos os Anos'}`, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
 
             // Salvar o PDF
-            doc.save(`Laudos_de_Mortes_${seletorAno.value || 'Todos_Anos'}.pdf`);
+            doc.save(`Laudos Cadavéricos${seletorAno.value || 'Todos_Anos'}.pdf`);
         });
 
         // Função para exportar os dados filtrados como CSV
@@ -509,11 +502,7 @@
             }
         });
 
-        // Opcional: Carregar automaticamente um ano específico ao carregar a página
-        // Por exemplo, para carregar 2017 por padrão:
-        // window.addEventListener('DOMContentLoaded', () => {
-        //     carregarCSV("2017LLM_zero_shot_com_fallback.csv", "2017");
-        // });
+     
     </script>
 
 </body>
